@@ -1,5 +1,0 @@
-.venv/
-__pycache__/
-.portfolio_cache/cache.before_update.db
-.portfolio_cache/cache.new.db
-UPDATE_REPORT.json
