@@ -1,0 +1,83 @@
+S&P 500 PORTFOLIO OPTIMIZER V4 — ΟΔΗΓΙΕΣ
+
+ΤΙ ΕΙΝΑΙ Η V4
+Η V4 περιλαμβάνει όλα τα reliability upgrades:
+- πραγματικό walk-forward backtest χωρίς να χρησιμοποιεί μελλοντικά δεδομένα,
+- transaction costs και turnover,
+- αυτόματη ανανέωση current S&P 500 universe,
+- point-in-time membership reconstruction,
+- αποθήκευση point-in-time fundamentals από εδώ και πέρα,
+- Alpha/Beta/Tracking Error/Information Ratio/Calmar,
+- modular κώδικα,
+- νέο UI/scorecard/charts,
+- περισσότερα stress tests,
+- 22 automated tests,
+- προαιρετικό GitHub Actions monthly update.
+
+ΣΗΜΑΝΤΙΚΟ ΓΙΑ POINT-IN-TIME FUNDAMENTALS
+Δεν επινοούμε ιστορικά fundamental δεδομένα που δεν έχουμε.
+Από το ΠΡΩΤΟ update της V4 και μετά, κάθε update αποθηκεύει πραγματικό as-of
+fundamental snapshot. Για παλιότερες ημερομηνίες το walk-forward backtest
+απενεργοποιεί αυτόματα Growth + Value και δουλεύει μόνο με price-based factors,
+ώστε να μην υπάρχει look-ahead bias από σημερινά fundamentals.
+
+ΠΡΩΤΗ ΕΓΚΑΤΑΣΤΑΣΗ ΣΤΟ GITHUB
+1. Κράτα το υπάρχον .portfolio_cache/cache.db σου.
+2. Ανέβασε/αντικατάστησε τα αρχεία κώδικα της V4 στη ρίζα του repository.
+3. Ανέβασε και τους νέους φακέλους/αρχεία:
+   - .github/workflows/monthly_update.yml
+   - data_store.py
+   - universe.py
+   - ranking.py
+   - backtest.py
+   - risk.py
+   - portfolio_math.py
+4. ΜΗΝ αντικαταστήσεις το δικό σου φρέσκο cache.db με το cache.db του FULL ZIP
+   αν το δικό σου έχει ήδη πιο πρόσφατα δεδομένα.
+5. Μετά τρέξε μία φορά UPDATE_MONTHLY.bat στο PC ώστε το cache.db να αποκτήσει
+   current universe/history + το πρώτο V4 PIT fundamental snapshot.
+6. Ανέβασε το νέο .portfolio_cache/cache.db στο GitHub.
+
+ΜΗΝΙΑΙΑ ΕΝΗΜΕΡΩΣΗ WINDOWS
+1. Κάνε αποσυμπίεση του project σε κανονικό φάκελο.
+2. Χρειάζεσαι Python 3.11+ με Python Launcher.
+3. Κάνε διπλό κλικ στο UPDATE_MONTHLY.bat.
+4. Περίμενε να γράψει SUCCESS.
+5. Αν γράψει UPDATE FAILED, ΜΗΝ ανεβάσεις cache.db.
+6. Αν γράψει SUCCESS, ανέβασε ΜΟΝΟ το .portfolio_cache/cache.db στο ίδιο path στο GitHub.
+
+ΤΙ ΚΑΝΕΙ ΤΟ UPDATE
+- Προσπαθεί να ανανεώσει την τρέχουσα σύνθεση S&P 500 από Wikipedia.
+- Αν η πηγή αποτύχει, κρατά το προηγούμενο saved universe.
+- Κατεβάζει current + χρήσιμα historical symbols από Yahoo Finance.
+- Κρατά historical symbols για PIT backtesting ακόμη κι αν δεν διαπραγματεύονται σήμερα.
+- Ανανεώνει fundamentals για current constituents.
+- Αποθηκεύει fundamental snapshot με πραγματική as-of ημερομηνία.
+- Δημιουργεί daily/weekly/monthly snapshots.
+- Φτιάχνει staged SQLite DB, κάνει integrity check και μετά atomic replace.
+- Τα SQLite connections κλείνουν ρητά πριν το replace και υπάρχει Windows retry.
+
+WALK-FORWARD TAB
+Το backtest:
+- παίρνει signal στο τέλος κάθε μήνα/τριμήνου,
+- χρησιμοποιεί μόνο δεδομένα έως εκείνη την ημέρα,
+- κάνει trade την επόμενη trading day,
+- αφήνει τα weights να driftάρουν φυσιολογικά μεταξύ rebalances,
+- υπολογίζει turnover,
+- αφαιρεί transaction costs,
+- συγκρίνει με S&P 500,
+- δείχνει CAGR, Sharpe, Max Drawdown, Alpha, Beta, Information Ratio,
+  rolling Sharpe/Beta και audit log κάθε rebalance.
+
+AUTOMATION
+Υπάρχει .github/workflows/monthly_update.yml.
+Μπορεί να τρέχει αυτόματα κάθε μήνα ή χειροκίνητα από GitHub > Actions.
+Πριν κάνει update τρέχει τα tests. Αν το update αποτύχει, δεν κάνει commit νέο cache.db.
+Το local UPDATE_MONTHLY.bat παραμένει fallback αν Yahoo/Wikipedia rate-limit το GitHub Actions.
+
+ΠΕΡΙΟΡΙΣΜΟΙ
+- Wikipedia/Yahoo είναι δημόσιες πηγές, όχι licensed institutional data feeds.
+- Το reconstructed historical index membership είναι καλύτερο από survivorship-biased current universe,
+  αλλά δεν ισοδυναμεί με CRSP/S&P licensed point-in-time database.
+- Τα synthetic stress tests είναι υποθέσεις σεναρίων, όχι forecasts.
+- Το app είναι research tool, όχι επενδυτική συμβουλή.
